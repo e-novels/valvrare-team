@@ -27,7 +27,8 @@ export function registerTranslatorProfile(novel: NovelExtensionApi): void {
           const response = await novel.network.fetchJson<{ translated?: string[] }>('https://api.example.com/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-            body: JSON.stringify({ paragraphs, target: request.targetLang || 'en' })
+            body: JSON.stringify({ paragraphs, target: request.targetLang || 'en' }),
+            timeout: 120_000 // 2 minutes for batch AI translation
           })
           if (response && Array.isArray(response.translated)) {
             return { translatedParagraphs: response.translated }
