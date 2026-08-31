@@ -109,6 +109,18 @@ export async function fetchChapterData(chapterRef: string) {
   
 Keep only the profile directory you are actively changing. The others remain as reference implementations, but they are not activated, tested, or declared in the package.  
   
+### Reference Repositories & Real-World Examples
+
+To understand how each extension profile works in practice and inspect working source code, refer to the following official repositories:
+
+| Extension Repository | Profile | Description |
+| --- | --- | --- |
+| [e-novels/hako-scraper](https://github.com/e-novels/hako-scraper) | `scraper` | Complete novel scraper implementation featuring search, filtering, chapter parsing, and batch volume downloads. |
+| [e-novels/theme](https://github.com/e-novels/theme) | `theme` | Custom UI and reader theme extension demonstrating CSS custom properties and color palettes. |
+| [e-novels/gemini-trans](https://github.com/e-novels/gemini-trans) | `translator` | AI translation provider integrating Google Gemini API for batch paragraph translations. |
+| [e-novels/edge-tts](https://github.com/e-novels/edge-tts) | `tts` (Cloud) | Cloud-based Text-to-Speech extension using Microsoft Edge TTS service with multiple voices and rate adjustments. |
+| [e-novels/valtec-tts](https://github.com/e-novels/valtec-tts) | `tts` (Process) | Advanced local Text-to-Speech provider communicating with a local Python/binary engine via stdio IPC bridge. |
+
 ## Customize a Scraper  
   
 1. Init with `--kind scraper --base-url https://...` (or set `starter.kind` to `scraper`), then edit `extension.json`: `name`, `displayName`, `publisher`, `version`, `description`, `contributes.scraper.site`, and `network.allowedHosts` (every HTTP(S) host you request; no wildcards).  
