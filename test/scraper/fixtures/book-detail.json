@@ -1,22 +1,28 @@
 {
-  "id": 101,
-  "title": "Example Book",
-  "image": "https://example.com/covers/example-book.jpg",
-  "author": { "id": 11, "name": "Example Author" },
-  "alternateTitles": ["Example Alternate Title"],
-  "description": "A fixture response for extension authors.",
-  "volumes": [
+  "novel": {
+    "_id": "101",
+    "title": "Example Book",
+    "description": "A fixture response for extension tests.",
+    "alternativeTitles": ["Example Alternate Title"],
+    "genres": ["Comedy", "Romance", "School Life"],
+    "author": "Example Author",
+    "illustrator": "Example Illustrator",
+    "illustration": "https://cdn.valvrareteam.net/covers/example-book.jpg",
+    "status": "Ongoing",
+    "views": { "total": 1076 },
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-02T00:00:00.000Z"
+  },
+  "modules": [
     {
-      "id": 201,
-      "name": "Volume 1",
-      "number": 1,
-      "createdAt": "2026-01-01T00:00:00.000Z",
-      "updatedAt": "2026-01-02T00:00:00.000Z",
+      "_id": "201",
+      "title": "Volume 1",
+      "order": 0,
       "chapters": [
         {
-          "id": 301,
-          "name": "Chapter 1",
-          "number": 1,
+          "_id": "301",
+          "title": "Chapter 1",
+          "order": 0,
           "createdAt": "2026-01-01T00:00:00.000Z",
           "updatedAt": "2026-01-02T00:00:00.000Z"
         }

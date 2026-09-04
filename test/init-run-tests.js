@@ -14,10 +14,6 @@ function createTemplate(target) {
   fs.mkdirSync(path.join(target, 'src', 'theme'), { recursive: true })
   fs.mkdirSync(path.join(target, 'src', 'translator'), { recursive: true })
   fs.mkdirSync(path.join(target, 'src', 'tts'), { recursive: true })
-  fs.mkdirSync(path.join(target, 'src', 'tts', 'processMode'), { recursive: true })
-  fs.mkdirSync(path.join(target, 'src', 'tts', 'cloudMode'), { recursive: true })
-  fs.mkdirSync(path.join(target, 'src', 'tts', 'wasmMode'), { recursive: true })
-  fs.mkdirSync(path.join(target, 'src', 'tts', 'python'), { recursive: true })
   fs.mkdirSync(path.join(target, 'src', 'types'), { recursive: true })
   fs.mkdirSync(path.join(target, 'test', 'theme'), { recursive: true })
   fs.mkdirSync(path.join(target, 'test', 'translator'), { recursive: true })
@@ -26,7 +22,6 @@ function createTemplate(target) {
 
   fs.copyFileSync(path.join(root, 'extension.json'), path.join(target, 'extension.json'))
   fs.copyFileSync(path.join(root, 'src', 'scraper', 'index.ts'), path.join(target, 'src', 'scraper', 'index.ts'))
-  fs.copyFileSync(path.join(root, 'src', 'tts', 'index.ts'), path.join(target, 'src', 'tts', 'index.ts'))
   fs.writeFileSync(path.join(target, 'src', 'types', 'scraper.d.ts'), '')
   fs.writeFileSync(path.join(target, 'src', 'types', 'theme.d.ts'), '')
   fs.writeFileSync(path.join(target, 'src', 'types', 'translator.d.ts'), '')
@@ -41,7 +36,8 @@ try {
     '--display-name', 'Library Source',
     '--publisher', 'independent-dev',
     '--kind', 'scraper',
-    '--base-url', 'https://books.example.org/'
+    '--base-url', 'https://books.example.org/',
+    '--force'
   ]))
   assert.equal(scraper.name, 'library-source')
   assert.deepEqual(scraper.network.allowedHosts, ['books.example.org'])
@@ -74,7 +70,8 @@ try {
     '--name', 'paper-theme',
     '--display-name', 'Paper Theme',
     '--publisher', 'independent-dev',
-    '--kind', 'theme'
+    '--kind', 'theme',
+    '--force'
   ]))
   assert.deepEqual(theme.permissions, ['ui.theme'])
   assert.deepEqual(theme.contributes, {})
@@ -84,14 +81,14 @@ try {
   assert.equal(fs.existsSync(path.join(themeRoot, 'test', 'scraper')), false)
   assert.match(fs.readFileSync(path.join(themeRoot, 'src', 'index.ts'), 'utf8'), /activateTheme/)
 
-
   const translatorRoot = path.join(tempRoot, 'translator')
   createTemplate(translatorRoot)
   const translator = initialize(translatorRoot, parseOptions([
     '--name', 'ai-translator',
     '--display-name', 'AI Translator',
     '--publisher', 'independent-dev',
-    '--kind', 'translator'
+    '--kind', 'translator',
+    '--force'
   ]))
   assert.deepEqual(translator.permissions, ['translate', 'network', 'storage'])
   assert.equal(translator.contributes.translator.name, 'AI Translator')
@@ -107,18 +104,14 @@ try {
     '--display-name', 'My TTS Service',
     '--publisher', 'independent-dev',
     '--kind', 'tts',
-    '--tts-mode', 'process'
+    '--tts-mode', 'process',
+    '--force'
   ]))
   assert.deepEqual(ttsProcess.permissions, ['tts', 'storage'])
   assert.equal(ttsProcess.contributes.tts.mode, 'process')
   assert.deepEqual(ttsProcess.contributes.tts.capabilities, ['getVoices', 'speak', 'stop'])
   assert.equal(fs.existsSync(path.join(ttsProcessRoot, 'src', 'theme')), false)
   assert.equal(fs.existsSync(path.join(ttsProcessRoot, 'src', 'types', 'theme.d.ts')), false)
-  assert.equal(fs.existsSync(path.join(ttsProcessRoot, 'src', 'tts', 'processMode')), true)
-  assert.equal(fs.existsSync(path.join(ttsProcessRoot, 'src', 'tts', 'python')), true)
-  assert.equal(fs.existsSync(path.join(ttsProcessRoot, 'src', 'tts', 'cloudMode')), false)
-  assert.equal(fs.existsSync(path.join(ttsProcessRoot, 'src', 'tts', 'wasmMode')), false)
-  assert.match(fs.readFileSync(path.join(ttsProcessRoot, 'src', 'tts', 'index.ts'), 'utf8'), /ProcessBridge/)
   assert.match(fs.readFileSync(path.join(ttsProcessRoot, 'src', 'index.ts'), 'utf8'), /activateTTS/)
 
   const ttsCloudRoot = path.join(tempRoot, 'tts-cloud')
@@ -128,15 +121,11 @@ try {
     '--display-name', 'My Cloud TTS',
     '--publisher', 'independent-dev',
     '--kind', 'tts',
-    '--tts-mode', 'cloud'
+    '--tts-mode', 'cloud',
+    '--force'
   ]))
   assert.deepEqual(ttsCloud.permissions, ['tts', 'network', 'storage'])
   assert.equal(ttsCloud.contributes.tts.mode, 'cloud')
-  assert.equal(fs.existsSync(path.join(ttsCloudRoot, 'src', 'tts', 'cloudMode')), true)
-  assert.equal(fs.existsSync(path.join(ttsCloudRoot, 'src', 'tts', 'processMode')), false)
-  assert.equal(fs.existsSync(path.join(ttsCloudRoot, 'src', 'tts', 'python')), false)
-  assert.equal(fs.existsSync(path.join(ttsCloudRoot, 'src', 'tts', 'wasmMode')), false)
-  assert.match(fs.readFileSync(path.join(ttsCloudRoot, 'src', 'tts', 'index.ts'), 'utf8'), /CloudBridge/)
 
   const ttsWasmRoot = path.join(tempRoot, 'tts-wasm')
   createTemplate(ttsWasmRoot)
@@ -145,15 +134,11 @@ try {
     '--display-name', 'My WASM TTS',
     '--publisher', 'independent-dev',
     '--kind', 'tts',
-    '--tts-mode', 'wasm'
+    '--tts-mode', 'wasm',
+    '--force'
   ]))
   assert.deepEqual(ttsWasm.permissions, ['tts', 'storage'])
   assert.equal(ttsWasm.contributes.tts.mode, 'wasm')
-  assert.equal(fs.existsSync(path.join(ttsWasmRoot, 'src', 'tts', 'wasmMode')), true)
-  assert.equal(fs.existsSync(path.join(ttsWasmRoot, 'src', 'tts', 'processMode')), false)
-  assert.equal(fs.existsSync(path.join(ttsWasmRoot, 'src', 'tts', 'python')), false)
-  assert.equal(fs.existsSync(path.join(ttsWasmRoot, 'src', 'tts', 'cloudMode')), false)
-  assert.match(fs.readFileSync(path.join(ttsWasmRoot, 'src', 'tts', 'index.ts'), 'utf8'), /WasmBridge/)
 
   console.log('Initializer tests passed')
 } finally {

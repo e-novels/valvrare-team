@@ -1,91 +1,50 @@
-const BASE_URL = 'https://example.com'
+export const BASE_URL = 'https://valvrareteam.net'
+
+import { fetchBookDetail } from './bookDetail'
+import { fetchChapter } from './chapter'
+import { executeSearch, getFilterOptions } from './search'
+import { fetchDownloadContent } from './download'
+import { ensureAuthenticatedSession } from './auth'
 
 export { extractArticleParagraphs } from './html'
-import { assertTemplateBookDetail, assertTemplateChapter, assertTemplateSearchResponse } from './validation'
-import { network } from '../utilities'
-
-function endpoint(pathname: string): string {
-  return new URL(pathname, BASE_URL).toString()
-}
-
-function toBookSummary(book: TemplateBook): ScraperBookSummary {
-  return {
-    book_id: book.id,
-    book_name: book.title,
-    book_image: book.image ?? '',
-    authors: book.author ? [{ author_id: book.author.id, author_name: book.author.name }] : []
-  }
-}
-
-function toBookDetail(book: TemplateBookDetail): ScraperBookDetail {
-  return {
-    ...toBookSummary(book),
-    book_sub_name: book.alternateTitles ?? [],
-    status: book.status ?? 'ongoing',
-    description: book.description ?? '',
-    artists: [],
-    book_genre: [],
-    volumes: book.volumes.map(volume => ({
-      volume_id: volume.id,
-      volume_name: volume.name,
-      volume_number: volume.number,
-      created_at: volume.createdAt,
-      updated_at: volume.updatedAt,
-      chapters: volume.chapters.map(chapter => ({
-        chapter_id: chapter.id,
-        chapter_name: chapter.name,
-        chapter_number: chapter.number,
-        created_at: chapter.createdAt,
-        updated_at: chapter.updatedAt
-      }))
-    })),
-    follow: 0,
-    latest_update: null,
-    rating_count: 0,
-    total_index: 0,
-    views: 0,
-    total_comment: 0,
-    average_rating: 0
-  }
-}
-
-function toChapter(chapter: TemplateChapter): ScraperChapter {
-  return {
-    chapter_id: chapter.id,
-    chapter_name: chapter.name,
-    chapter_number: chapter.number,
-    volume_id: chapter.volumeId,
-    book_id: chapter.bookId,
-    content: chapter.paragraphs,
-    total_index: chapter.paragraphs.length,
-    status: 'ongoing',
-    created_at: chapter.createdAt,
-    updated_at: chapter.updatedAt
-  }
-}
+export { fetchBookDetail, resolveNovelId, extractIdFromSlug } from './bookDetail'
+export { fetchChapter, resolveChapterId } from './chapter'
+export { executeSearch, getFilterOptions, toBookSummary } from './search'
+export { fetchDownloadContent } from './download'
+export {
+  login,
+  checkConnection,
+  checkConnectionAction,
+  clearSession,
+  loadStoredSession,
+  ensureAuthenticatedSession,
+  getAuthHeaders,
+  getCachedToken,
+  setCachedToken
+} from './auth'
+export { valvrareClient, ValvrareClient } from './client'
 
 export async function activateScraper(novel: NovelExtensionApi): Promise<void> {
   await novel.scraper.register({
     async search({ filters, page, pageSize }) {
-      const url = new URL(endpoint('/api/books'))
-      const query = typeof filters.query === 'string' ? filters.query : ''
-      url.searchParams.set('query', query)
-      url.searchParams.set('page', String(page))
-      url.searchParams.set('pageSize', String(pageSize))
-
-      const response = await network.fetchJson<TemplateSearchResponse>(url.toString())
-      assertTemplateSearchResponse(response)
-      return { items: response.items.map(toBookSummary), pagination: response.pagination }
+      await ensureAuthenticatedSession()
+      return executeSearch(filters, page, pageSize)
     },
     async getBookDetail({ bookRef }) {
-      const response = await network.fetchJson<TemplateBookDetail>(endpoint(`/api/books/${bookRef}`))
-      assertTemplateBookDetail(response)
-      return toBookDetail(response)
+      await ensureAuthenticatedSession()
+      return fetchBookDetail(bookRef)
     },
-    async getChapter({ chapterRef }) {
-      const response = await network.fetchJson<TemplateChapter>(endpoint(`/api/chapters/${chapterRef}`))
-      assertTemplateChapter(response)
-      return toChapter(response)
+    async getChapter({ chapterRef, bookRef }) {
+      await ensureAuthenticatedSession()
+      return fetchChapter(chapterRef, bookRef)
+    },
+    async getFilterOptions(request) {
+      await ensureAuthenticatedSession()
+      return getFilterOptions(request)
+    },
+    async download(request) {
+      await ensureAuthenticatedSession()
+      return fetchDownloadContent(request)
     }
   })
 }

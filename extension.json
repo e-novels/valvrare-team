@@ -1,9 +1,9 @@
 {
-  "name": "example-extension",
-  "displayName": "Example Extension",
-  "publisher": "your-publisher",
+  "name": "valvrare-team",
+  "displayName": "Valvrare Team",
+  "publisher": "valvrare",
   "version": "0.1.0",
-  "description": "A fixture-backed template for e-novels scraper or theme extensions.",
+  "description": "Tìm kiếm và đọc truyện từ Valvrare Team.",
   "starter": {
     "kind": "scraper"
   },
@@ -22,32 +22,73 @@
   "keywords": [
     "e-novels",
     "scraper",
-    "theme",
-    "template",
+    "valvrare",
     "typescript"
   ],
   "permissions": [
     "network",
-    "reader"
+    "reader",
+    "storage"
   ],
   "network": {
     "allowedHosts": [
-      "example.com"
+      "valvrareteam.net",
+      "cdn.valvrareteam.net",
+      "valvrareteam.b-cdn.net",
+      "images.weserv.nl"
     ]
   },
   "contributes": {
+    "settings": {
+      "fields": [
+        {
+          "id": "username",
+          "type": "text",
+          "label": "Tài khoản Valvrare Team",
+          "placeholder": "Nhập tên tài khoản"
+        },
+        {
+          "id": "password",
+          "type": "password",
+          "label": "Mật khẩu Valvrare Team",
+          "placeholder": "••••••••"
+        }
+      ],
+      "actions": [
+        {
+          "id": "loginAndCheckConnection",
+          "label": "Đăng nhập & Kiểm tra kết nối",
+          "fields": [
+            "username",
+            "password"
+          ],
+          "style": "primary"
+        },
+        {
+          "id": "checkConnectionAction",
+          "label": "Kiểm tra đăng nhập",
+          "style": "default"
+        },
+        {
+          "id": "clearSession",
+          "label": "Đăng xuất & Xóa Session"
+        }
+      ]
+    },
     "scraper": {
-      "name": "Example Site",
-      "description": "Replace the placeholder routes and mappers with a source you are allowed to access.",
+      "name": "Valvrare Team",
+      "description": "Tìm kiếm và đọc truyện từ Valvrare Team.",
       "version": 2,
       "site": {
-        "name": "Example Site",
-        "baseUrl": "https://example.com"
+        "name": "Valvrare Team",
+        "baseUrl": "https://valvrareteam.net"
       },
       "capabilities": [
         "search",
         "getBookDetail",
-        "getChapter"
+        "getChapter",
+        "download",
+        "getFilterOptions"
       ],
       "search": {
         "pageSize": 20,
@@ -55,7 +96,31 @@
           {
             "id": "query",
             "type": "text",
-            "label": "Search"
+            "label": "Tìm kiếm truyện..."
+          },
+          {
+            "id": "status",
+            "type": "select",
+            "label": "Tình trạng",
+            "defaultValue": "any",
+            "options": [
+              {
+                "label": "Tất cả",
+                "value": "any"
+              },
+              {
+                "label": "Đang tiến hành",
+                "value": "Ongoing"
+              },
+              {
+                "label": "Hoàn thành",
+                "value": "Completed"
+              },
+              {
+                "label": "Tạm ngưng",
+                "value": "Hiatus"
+              }
+            ]
           }
         ]
       }

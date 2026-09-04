@@ -1,15 +1,17 @@
 {
-  "items": [
+  "novels": [
     {
-      "id": 101,
-      "title": "Example Book",
-      "image": "https://example.com/covers/example-book.jpg",
-      "author": { "id": 11, "name": "Example Author" }
+      "_id": "67f66b09121cfba2bc525712",
+      "title": "Jakushou Soshage-bu no Bokura ga Kamige wo Tsukuru made",
+      "author": "Shiki Oriori",
+      "illustration": "https://cdn.valvrareteam.net/novel-illustrations/zn4iytb_a447754e.webp",
+      "status": "Ongoing",
+      "chapterCount": 22
     }
   ],
   "pagination": {
-    "page": 2,
-    "pageSize": 20,
-    "hasNextPage": false
+    "currentPage": 2,
+    "totalPages": 5,
+    "totalItems": 100
   }
 }

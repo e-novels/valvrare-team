@@ -1,10 +1,12 @@
 {
-  "id": 301,
-  "name": "Chapter 1",
-  "number": 1,
-  "volumeId": 201,
-  "bookId": 101,
-  "paragraphs": ["First fixture paragraph.", "Second fixture paragraph."],
-  "createdAt": "2026-01-01T00:00:00.000Z",
-  "updatedAt": "2026-01-02T00:00:00.000Z"
+  "chapter": {
+    "_id": "301",
+    "novelId": "101",
+    "moduleId": "201",
+    "title": "Chapter 1",
+    "content": "<p>First HTML fixture paragraph.</p><p>Second HTML fixture paragraph.</p>",
+    "order": 0,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-02T00:00:00.000Z"
+  }
 }
