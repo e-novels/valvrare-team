@@ -27,7 +27,7 @@ module.exports = async function runScraperTests(root, manifest) {
   )
   assert.deepEqual(
     manifest.contributes.scraper.capabilities.slice().sort(),
-    ['download', 'getBookDetail', 'getChapter', 'getFilterOptions', 'search'].sort()
+    ['download', 'getBookDetail', 'getChapter', 'getComments', 'getFilterOptions', 'getReviews', 'search'].sort()
   )
 
   async function smokeBundle(filename) {
@@ -41,6 +41,66 @@ module.exports = async function runScraperTests(root, manifest) {
     let settingsHandlers
 
     const storageMap = new Map()
+
+    const mockCommentsData = {
+      comments: [
+        {
+          _id: 'comm_1',
+          text: '<p>Great novel!</p>',
+          user: {
+            _id: 'user_1',
+            username: 'TestReader',
+            displayName: 'Test Reader',
+            avatar: 'https://cdn.valvrareteam.net/avatars/test.jpg'
+          },
+          createdAt: '2026-01-01T00:00:00.000Z',
+          likesCount: 5,
+          replies: [
+            {
+              _id: 'reply_1',
+              text: '<p>I agree!</p>',
+              user: {
+                _id: 'user_2',
+                username: 'ReplyReader',
+                displayName: 'Reply Reader'
+              },
+              createdAt: '2026-01-02T00:00:00.000Z',
+              likesCount: 1
+            }
+          ]
+        }
+      ],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalComments: 1,
+        hasNext: false
+      }
+    }
+
+    const mockReviewsData = {
+      reviews: [
+        {
+          id: 'rev_1',
+          user: {
+            _id: 'user_1',
+            username: 'TestReviewer',
+            displayName: 'Test Reviewer',
+            avatar: 'https://cdn.valvrareteam.net/avatars/reviewer.jpg'
+          },
+          rating: 5,
+          review: '<p>Outstanding translation and quality.</p>',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          likesCount: 10,
+          isLikedByCurrentUser: false
+        }
+      ],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 1
+      }
+    }
 
     const mockNovel = {
       version: '1.0.0',
@@ -106,6 +166,63 @@ module.exports = async function runScraperTests(root, manifest) {
                 content: '   '
               }
             }
+          }
+
+          if (pathname === '/api/novels/slug/dungeon-defense-cd23c90b') {
+            return { id: '67ea5aa24accb76ecd23c90b', title: 'Dungeon Defense' }
+          }
+
+          if (pathname === '/api/chapters/slug/chuong-2-chua-quy-len-san-dien-4f001ae0') {
+            return { id: '67f3acc84febbb854f001ae0', title: 'Chương 2: Chúa quỷ lên sàn diễn' }
+          }
+
+          if (pathname === '/api/chapters/67f3acc84febbb854f001ae0') {
+            return {
+              chapter: {
+                _id: '67f3acc84febbb854f001ae0',
+                novelId: '67ea5aa24accb76ecd23c90b',
+                title: 'Chương 2: Chúa quỷ lên sàn diễn',
+                content: '<p>Chapter text</p>'
+              }
+            }
+          }
+
+          if (pathname === '/api/comments') {
+            const contentType = requestUrl.searchParams.get('contentType')
+            const contentId = requestUrl.searchParams.get('contentId')
+            return {
+              comments: [
+                {
+                  _id: 'chap_comm_1',
+                  text: '<p>Quả sừng mất tiêu r huhu</p>',
+                  user: {
+                    _id: 'user_chap',
+                    username: 'YH123',
+                    displayName: 'YH123',
+                    avatar: 'https://cdn.valvrareteam.net/avatars/test.jpg'
+                  },
+                  contentType: contentType || 'chapters',
+                  contentId: contentId || '101-301',
+                  createdAt: '2026-04-29T23:27:06.524Z',
+                  likesCount: 2,
+                  replies: []
+                }
+              ],
+              pagination: {
+                currentPage: 1,
+                totalPages: 1,
+                totalComments: 1,
+                hasNext: false
+              }
+            }
+          }
+
+          if (pathname.startsWith('/api/comments/novel/')) {
+            return mockCommentsData
+          }
+
+          if (pathname.startsWith('/api/usernovelinteractions/reviews/')) {
+            return mockReviewsData
           }
 
           throw new Error(`Unexpected fixture request: ${url}`)
@@ -231,7 +348,47 @@ module.exports = async function runScraperTests(root, manifest) {
       assert.equal(downloadRes.book_id, '101')
       assert.equal(downloadRes.volumes[0].chapters[0].content.length, 2)
 
-      // 6. Auth flow tests (using clean mock credentials)
+      // 6. Comments test
+      const commentsRes = await handlers.getComments({ bookRef: '101' })
+      assert.equal(commentsRes.data.length, 1)
+      assert.equal(commentsRes.data[0].socket_id, 'comm_1')
+      assert.equal(commentsRes.data[0].content, 'Great novel!')
+      assert.equal(commentsRes.data[0].replies.length, 1)
+      assert.equal(commentsRes.data[0].replies[0].content, 'I agree!')
+
+      // Comments replies via parentRef
+      const repliesRes = await handlers.getComments({ bookRef: '101', parentRef: 'comm_1' })
+      assert.equal(repliesRes.data.length, 1)
+      assert.equal(repliesRes.data[0].socket_id, 'reply_1')
+
+      // Chapter comments test: direct bookRef + targetRef
+      const chapCommentsRes = await handlers.getComments({ bookRef: '101', commentTarget: 'chapter', targetRef: '301' })
+      assert.equal(chapCommentsRes.data.length, 1)
+      assert.equal(chapCommentsRes.data[0].socket_id, 'chap_comm_1')
+      assert.equal(chapCommentsRes.data[0].chapter_id, '301')
+
+      // Chapter comments test: full chapter URL (sample URL provided by user)
+      const sampleChapterUrl = 'https://valvrareteam.net/truyen/dungeon-defense-cd23c90b/chuong/chuong-2-chua-quy-len-san-dien-4f001ae0'
+      const sampleUrlRes = await handlers.getComments({ bookRef: sampleChapterUrl })
+      assert.equal(sampleUrlRes.data.length, 1)
+      assert.equal(sampleUrlRes.data[0].socket_id, 'chap_comm_1')
+      assert.equal(sampleUrlRes.data[0].content, 'Quả sừng mất tiêu r huhu')
+      assert.equal(sampleUrlRes.data[0].chapter_id, '67f3acc84febbb854f001ae0')
+      assert.equal(sampleUrlRes.data[0].chapter_name, 'Chương 2: Chúa quỷ lên sàn diễn')
+
+      // Scope filter: series comments should include hideChapterComments=true
+      await handlers.getComments({ bookRef: '101', commentScope: 'series' })
+      const lastCommentsUrl = requests[requests.length - 1]
+      assert.match(lastCommentsUrl, /hideChapterComments=true/)
+
+      // 7. Reviews test
+      const reviewsRes = await handlers.getReviews({ bookRef: '101' })
+      assert.equal(reviewsRes.length, 1)
+      assert.equal(reviewsRes[0].interaction_id, 'rev_1')
+      assert.equal(reviewsRes[0].value, 5)
+      assert.equal(reviewsRes[0].message, 'Outstanding translation and quality.')
+
+      // 8. Auth flow tests
       assert.equal(extension.getCachedToken(), null)
       const loginFail = await extension.login('badUser', 'badPass')
       assert.equal(loginFail, false)
@@ -257,7 +414,7 @@ module.exports = async function runScraperTests(root, manifest) {
       assert.equal(extension.getCachedToken(), null)
       assert.equal(await mockNovel.storage.get('valvrare_token'), null)
 
-      // 7. Error handling tests
+      // 9. Error handling tests
       await assert.rejects(
         () => handlers.getChapter({ chapterRef: 'invalid' }),
         /The chapter content did not contain readable text/
@@ -267,7 +424,7 @@ module.exports = async function runScraperTests(root, manifest) {
         /HTTP 429/
       )
 
-      // 8. Contract enforcement tests
+      // 10. Contract enforcement tests
       await runScraperContractTests(root, manifest, handlers)
       await extension.deactivate()
     } finally {

@@ -88,7 +88,9 @@
         "getBookDetail",
         "getChapter",
         "download",
-        "getFilterOptions"
+        "getFilterOptions",
+        "getComments",
+        "getReviews"
       ],
       "search": {
         "pageSize": 20,

@@ -11,10 +11,12 @@ import {
 } from './scraper/auth'
 
 export { extractArticleParagraphs } from './scraper/html'
-export { fetchBookDetail, resolveNovelId, extractIdFromSlug } from './scraper/bookDetail'
-export { fetchChapter, resolveChapterId } from './scraper/chapter'
+export { fetchBookDetail, resolveNovelId, extractIdFromSlug, cleanNovelSlug } from './scraper/bookDetail'
+export { fetchChapter, resolveChapterId, cleanChapterSlug } from './scraper/chapter'
 export { executeSearch, getFilterOptions, toBookSummary } from './scraper/search'
 export { fetchDownloadContent } from './scraper/download'
+export { fetchComments, toScraperComment } from './scraper/comment'
+export { fetchReviews, toScraperReview } from './scraper/rating'
 export {
   login,
   checkConnection,

@@ -16,8 +16,22 @@ export interface ApiChapterResponse {
   }
 }
 
+export function cleanChapterSlug(chapterRef: string): string {
+  let clean = String(chapterRef || '').trim()
+  clean = clean.replace(/^https?:\/\/[^/]+/, '')
+  clean = clean.replace(/^\/+/, '')
+  if (clean.includes('/chuong/')) {
+    clean = clean.split('/chuong/')[1]
+  } else if (clean.startsWith('chuong/')) {
+    clean = clean.replace(/^chuong\//, '')
+  }
+  clean = clean.split(/[?#]/)[0]
+  return clean.replace(/\/+$/, '')
+}
+
 export async function resolveChapterId(chapterRef: string): Promise<string> {
-  const cleanRef = String(chapterRef).trim().replace(/^\/+/, '')
+  const cleanRef = cleanChapterSlug(chapterRef)
+  if (!cleanRef) return ''
   const directId = extractIdFromSlug(cleanRef)
   if (directId) return directId
 

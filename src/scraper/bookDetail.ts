@@ -42,9 +42,21 @@ export interface ApiNovelCompleteResponse {
   modules?: ApiModule[]
 }
 
+export function cleanNovelSlug(bookRef: string): string {
+  let clean = String(bookRef || '').trim()
+  clean = clean.replace(/^https?:\/\/[^/]+/, '')
+  clean = clean.replace(/^\/+/, '')
+  clean = clean.replace(/^truyen\//, '')
+  if (clean.includes('/chuong/')) {
+    clean = clean.split('/chuong/')[0]
+  }
+  clean = clean.split(/[?#]/)[0]
+  return clean.replace(/\/+$/, '')
+}
+
 export function extractIdFromSlug(slug: string): string | null {
   if (!slug) return null
-  const clean = slug.replace(/^\/+/, '').replace(/^truyen\//, '')
+  const clean = cleanNovelSlug(slug)
   if (/^[0-9a-fA-F]{24}$/.test(clean)) return clean
   const parts = clean.split('-')
   const last = parts[parts.length - 1]
@@ -61,7 +73,8 @@ export function mapNovelStatus(status?: string): string {
 }
 
 export async function resolveNovelId(bookRef: string): Promise<string> {
-  const cleanRef = String(bookRef).trim().replace(/^\/+/, '').replace(/^truyen\//, '')
+  const cleanRef = cleanNovelSlug(bookRef)
+  if (!cleanRef) return ''
   const directId = extractIdFromSlug(cleanRef)
   if (directId) return directId
 

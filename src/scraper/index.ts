@@ -5,12 +5,16 @@ import { fetchChapter } from './chapter'
 import { executeSearch, getFilterOptions } from './search'
 import { fetchDownloadContent } from './download'
 import { ensureAuthenticatedSession } from './auth'
+import { fetchComments } from './comment'
+import { fetchReviews } from './rating'
 
 export { extractArticleParagraphs } from './html'
-export { fetchBookDetail, resolveNovelId, extractIdFromSlug } from './bookDetail'
-export { fetchChapter, resolveChapterId } from './chapter'
+export { fetchBookDetail, resolveNovelId, extractIdFromSlug, cleanNovelSlug } from './bookDetail'
+export { fetchChapter, resolveChapterId, cleanChapterSlug } from './chapter'
 export { executeSearch, getFilterOptions, toBookSummary } from './search'
 export { fetchDownloadContent } from './download'
+export { fetchComments, toScraperComment } from './comment'
+export { fetchReviews, toScraperReview } from './rating'
 export {
   login,
   checkConnection,
@@ -45,6 +49,14 @@ export async function activateScraper(novel: NovelExtensionApi): Promise<void> {
     async download(request) {
       await ensureAuthenticatedSession()
       return fetchDownloadContent(request)
+    },
+    async getComments(request) {
+      await ensureAuthenticatedSession()
+      return fetchComments(request)
+    },
+    async getReviews({ bookRef }) {
+      await ensureAuthenticatedSession()
+      return fetchReviews(bookRef)
     }
   })
 }
