@@ -1,8 +1,5 @@
-import { initExtensionApi, logger, settings } from './utilities'
+import { initExtensionApi, logger } from './utilities'
 import { activateScraper } from './scraper'
-import { activateTheme } from './theme'
-import { activateTTS } from './tts'
-import { registerTranslatorProfile } from './translator'
 import {
   loginAndCheckConnection,
   checkConnectionAction,
@@ -31,27 +28,16 @@ export {
 export { valvrareClient, ValvrareClient } from './scraper/client'
 export * from './utilities'
 
-declare const __NOVEL_EXTENSION_KIND__: 'scraper' | 'theme' | 'tts' | 'translator'
-
 export async function activate(novel: NovelExtensionApi): Promise<void> {
   initExtensionApi(novel)
-
-  if (__NOVEL_EXTENSION_KIND__ === 'scraper') {
-    await activateScraper(novel)
-    await loadStoredSession()
-    if (novel.settings) {
-      await novel.settings.register({
-        loginAndCheckConnection,
-        checkConnectionAction,
-        clearSession
-      })
-    }
-  } else if (__NOVEL_EXTENSION_KIND__ === 'tts') {
-    await activateTTS(novel)
-  } else if (__NOVEL_EXTENSION_KIND__ === 'translator') {
-    registerTranslatorProfile(novel)
-  } else {
-    await activateTheme(novel)
+  await activateScraper(novel)
+  await loadStoredSession()
+  if (novel.settings) {
+    await novel.settings.register({
+      loginAndCheckConnection,
+      checkConnectionAction,
+      clearSession
+    })
   }
   await logger.info(`Activated ${novel.extension.id}`)
 }
